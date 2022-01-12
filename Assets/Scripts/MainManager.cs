@@ -11,6 +11,8 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text Text_playerNameBestEver;
+    public Text Text_ScoreBestEver;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,14 +20,29 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    [SerializeField] GameObject instructionSpaceBar;
+    [SerializeField] GameObject instructionYouWin;
+
+
     // Start is called before the first frame update
     void Start()
     {
+        GameManager.Instance.LoadBest();
+
+        if (GameManager.Instance.playerNameBestEver == null)
+            Text_playerNameBestEver.text = string.Empty;
+        else if (GameManager.Instance.playerNameBestEver != null)
+            Text_playerNameBestEver.text = GameManager.Instance.playerNameBestEver;
+        
+        if(GameManager.Instance.ScoreBestEver != 0)
+            Text_ScoreBestEver.text = GameManager.Instance.ScoreBestEver.ToString();
+
+        StartCoroutine(StartSpaceBarRoutine());
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -38,8 +55,25 @@ public class MainManager : MonoBehaviour
         }
     }
 
+    IEnumerator StartSpaceBarRoutine()
+    {
+        instructionSpaceBar.SetActive(true);
+
+        yield return new WaitForSeconds(4f);
+
+        instructionSpaceBar.SetActive(false);
+    }
+
     private void Update()
     {
+        if(m_Points == 108)
+        {
+            m_GameOver = true;
+            instructionYouWin.SetActive(true);
+            if (Input.GetKeyDown(KeyCode.Space))
+                return;
+        }
+
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -56,21 +90,29 @@ public class MainManager : MonoBehaviour
         else if (m_GameOver)
         {
             if (Input.GetKeyDown(KeyCode.Space))
-            {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
+            else if(Input.GetKeyDown(KeyCode.Escape))
+                SceneManager.LoadScene(0);
+            
         }
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"{m_Points}" +" : 108";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+
+        if(m_Points > GameManager.Instance.ScoreBestEver)
+        {
+            GameManager.Instance.ScoreBestEver = m_Points;
+            GameManager.Instance.SaveBest();
+        }
     }
 }
