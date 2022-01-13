@@ -100,4 +100,13 @@ public class MenuUIManager : MonoBehaviour
         GameManager.Instance.LoadBest();
 
     }
+
+    public void ResetBestRecord()
+    {
+        GameManager.Instance.playerNameBestEver = null;
+        GameManager.Instance.ScoreBestEver = 0;
+
+        GameManager.Instance.SaveBest();
+
+    }
 }

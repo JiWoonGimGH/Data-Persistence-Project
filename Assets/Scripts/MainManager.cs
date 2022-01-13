@@ -10,15 +10,17 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
+    public Text Text_playerNameCurrent;
     public Text ScoreText;
     public Text Text_playerNameBestEver;
     public Text Text_ScoreBestEver;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
-    
-    private bool m_GameOver = false;
+    [SerializeField] int m_Points;
+
+    [SerializeField] bool m_GameOver = false;
+    [SerializeField] bool m_YouWin = false;
 
     [SerializeField] GameObject instructionSpaceBar;
     [SerializeField] GameObject instructionYouWin;
@@ -28,6 +30,7 @@ public class MainManager : MonoBehaviour
     void Start()
     {
         GameManager.Instance.LoadBest();
+        Text_playerNameCurrent.text = GameManager.Instance.playerNameCurrent;
 
         if (GameManager.Instance.playerNameBestEver == null)
             Text_playerNameBestEver.text = string.Empty;
@@ -66,8 +69,12 @@ public class MainManager : MonoBehaviour
 
     private void Update()
     {
-        if(m_Points == 108)
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene(0);
+
+        if (m_Points >= 96)
         {
+            m_YouWin = true;
             m_GameOver = true;
             instructionYouWin.SetActive(true);
             if (Input.GetKeyDown(KeyCode.Space))
@@ -100,11 +107,14 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"{m_Points}" +" : 108";
+        ScoreText.text = $"{m_Points}" +" : 96";
     }
 
     public void GameOver()
     {
+        if (m_YouWin)
+            return;
+
         m_GameOver = true;
         GameOverText.SetActive(true);
 
